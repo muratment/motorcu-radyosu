@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111318">
+  <title>Motorcu Radyosu LiveKit 0.5</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon">🏍</span><div><strong>MOTORCU RADYOSU</strong><small>Özel topluluk yayını</small></div></div>
+    <span id="status" class="status off"><i></i> YAYIN KAPALI</span>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">MOTORCU TOPLULUĞU • CANLI SES</div>
+      <h1>Yol arkadaşların<br><span>aynı frekansta.</span></h1>
+      <p>Canlı yayın, konuklu sohbet ve topluluk mesajları tek yerde.</p>
+      <div class="mode-tabs">
+        <button class="tab active" data-view="listen">📱 Dinleyici</button>
+        <button class="tab" data-view="console">🎚️ Yayın konsolu</button>
+      </div>
+    </section>
+
+    <section id="listenView" class="layout">
+      <div id="listenerCard" class="card player-card">
+        <div class="card-head"><span>ŞİMDİ YAYINDA</span><span class="live-dot"></span></div>
+        <div class="cover">🏍️</div>
+        <h2 id="showTitle">Motorcu Sohbeti</h2>
+        <p id="playerText" class="muted">Yayın başladığında burada görünecek.</p>
+        <label class="field-label" for="listenerFirstName">Adın</label>
+        <input id="listenerFirstName" maxlength="50" autocomplete="given-name" placeholder="Adın">
+        <label class="field-label" for="listenerLastName">Soyadın</label>
+        <input id="listenerLastName" maxlength="50" autocomplete="family-name" placeholder="Soyadın">
+        <button id="joinBtn" class="btn primary full">Dinleyici olarak bağlan</button>
+        <div class="listener-audio">
+          <button id="listenNowBtn" class="btn primary full" disabled>▶ Canlı yayını dinle</button>
+          <audio id="liveAudio" controls autoplay playsinline></audio>
+          <p id="audioStatus" class="muted small" aria-live="polite">Önce adın ve soyadınla bağlan. Yayın başladığında buradan dinleyebilirsin.</p>
+        </div>
+        <div class="note warning">Canlı ses LiveKit Cloud üzerinden aktarılır. Önce bilgisayar ve aynı Wi-Fi üzerindeki telefonla dene; WhatsApp grubuna herkese açık erişim için bu uygulamanın HTTPS adresinde yayımlanması gerekir.</div>
+      </div>
+      <div id="guestInviteCard" class="card hidden guest-invite-card">
+        <div class="card-head"><span>🤝 KONUK DAVETİ</span><span class="badge">GEÇİCİ OTURUM</span></div>
+        <div class="guest-hero">🎙️</div>
+        <h2>Programa konuk ol</h2>
+        <p class="muted">Bu davet bağlantısı geçici bir konuk oturumu içindir. Adını ve soyadını yazıp katılabilirsin.</p>
+        <label class="field-label" for="guestFirstName">Adın</label>
+        <input id="guestFirstName" maxlength="50" autocomplete="given-name" placeholder="Adın">
+        <label class="field-label" for="guestLastName">Soyadın</label>
+        <input id="guestLastName" maxlength="50" autocomplete="family-name" placeholder="Soyadın">
+        <button id="joinGuestBtn" class="btn primary full">Konuk olarak katıl</button>
+        <p id="guestStatus" class="muted small" aria-live="polite">Davet kontrol ediliyor...</p>
+        <div class="note warning">Konuk katılımı geçici davet bağlantısıyladır. Ad ve soyad yazıyla alınır; kimlik doğrulaması yapılmaz.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">YAYIN BİLGİSİ</div>
+        <div class="info-row"><span>Durum</span><strong id="infoStatus">Kapalı</strong></div>
+        <div class="info-row"><span>Dinleyici / konuk</span><strong id="listenerCount">0 / 0</strong></div>
+        <div class="info-row"><span>Program</span><strong id="infoTitle">Motorcu Sohbeti</strong></div>
+        <hr>
+        <h3>Yayıncıya mesaj gönder</h3>
+        <textarea id="message" maxlength="400" placeholder="Mesajını yaz..."></textarea>
+        <button id="sendBtn" class="btn secondary full">Mesaj gönder</button>
+        <p id="messageFeedback" class="muted small"></p>
+      </div>
+    </section>
+
+    <section id="consoleView" class="layout hidden">
+      <div class="card console-main">
+        <div class="card-head">ANA YAYIN KONSOLU <span class="badge">PC</span></div>
+        <label class="field-label" for="consolePin">Konsol PIN'i (kurulumda belirlediğin)</label>
+        <input id="consolePin" type="password" placeholder="Kurulum sırasında belirlediğin PIN">
+        <button id="consoleLogin" class="btn secondary full">Konsola bağlan</button>
+        <label class="field-label" for="programTitle">Program adı</label>
+        <input id="programTitle" maxlength="80" value="Motorcu Sohbeti">
+        <div class="button-row">
+          <button id="startBtn" class="btn primary">🔴 Yayını başlat</button>
+          <button id="stopBtn" class="btn danger">■ Yayını bitir</button>
+        </div>
+        <p id="streamStatus" class="muted small" aria-live="polite">Yayın kapalı. Başlatınca mikslenmiş ses dinleyicilere gönderilir.</p>
+
+        <section class="studio-section">
+          <div class="section-title"><span>🎵 MÜZİK ÇALAR &amp; ÇALMA LİSTESİ</span><span id="trackCount" class="badge">0 parça</span></div>
+          <div class="file-actions">
+            <label class="btn secondary file-button" for="audioFiles">＋ MP3 DOSYASI EKLE</label>
+            <input id="audioFiles" type="file" accept="audio/mpeg,audio/mp3,audio/*" multiple hidden>
+            <button id="clearPlaylist" class="btn secondary">Listeyi temizle</button>
+          </div>
+          <div class="now-playing">
+            <div class="album-icon">♫</div>
+            <div class="track-meta"><strong id="trackTitle">Henüz parça seçilmedi</strong><span id="trackTime" class="muted small">00:00 / 00:00</span></div>
+          </div>
+          <audio id="musicPlayer" preload="metadata"></audio>
+          <input id="seekBar" class="seek" type="range" min="0" max="1000" value="0" aria-label="Parça konumu">
+          <div class="player-controls">
+            <button id="prevTrack" class="round-btn" title="Önceki">⏮</button>
+            <button id="playPause" class="round-btn play" title="Çal">▶</button>
+            <button id="nextTrack" class="round-btn" title="Sonraki">⏭</button>
+            <button id="repeatTrack" class="round-btn" title="Tekrar kapalı">↻</button>
+            <button id="shuffleTrack" class="round-btn" title="Karışık çalma kapalı">🔀</button>
+          </div>
+          <div id="playlist" class="playlist empty">MP3 dosyalarını ekleyerek listenizi oluşturun.</div>
+          <div class="mixer">
+            <div class="mixer-channel">
+              <label for="musicVolume">🎵 Müzik seviyesi <strong id="musicVolumeValue">80%</strong></label>
+              <input id="musicVolume" type="range" min="0" max="100" value="80">
+              <button id="musicMute" class="mini-toggle" type="button">Müziği sessize al</button>
+            </div>
+            <div class="mixer-channel">
+              <label for="masterVolume">🔊 Ana çıkış <strong id="masterVolumeValue">80%</strong></label>
+              <input id="masterVolume" type="range" min="0" max="100" value="80">
+              <span class="muted small">Yayın sesinin genel seviyesi</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="studio-section">
+          <div class="section-title">🎙️ MİKROFON KANALI</div>
+          <div class="mixer-channel">
+            <label for="micVolume">Mikrofon seviyesi <strong id="micVolumeValue">80%</strong></label>
+            <input id="micVolume" type="range" min="0" max="100" value="80">
+            <button id="micMute" class="mini-toggle" type="button">Mikrofonu sessize al</button>
+          </div>
+          <div class="mic-row"><button id="micEnable" class="btn secondary">🎙️ Mikrofon izni ver</button><span id="micStatus" class="muted small">Mikrofon kapalı</span></div>
+          <div class="meter"><div id="micMeter"></div></div>
+          <p class="muted small">Mikrofon sesi müzik ve efektlerle karıştırılarak LiveKit Cloud canlı yayınına eklenir. Mikrofonu açmak için tarayıcı izni gerekir.</p>
+        </section>
+
+        <section class="studio-section">
+          <div class="section-title"><span>🎭 SES EFEKTLERİ</span><span class="badge">TEK TUŞ</span></div>
+          <p class="muted small effect-intro">Program sırasında kahkaha, alkış, korna, davul geçişi ve zil seslerini tek tuşla çal.</p>
+          <div class="soundboard">
+            <button class="sound-button" type="button" data-effect="laugh"><span>😂</span><strong>Kahkaha</strong></button>
+            <button class="sound-button" type="button" data-effect="applause"><span>👏</span><strong>Alkış</strong></button>
+            <button class="sound-button" type="button" data-effect="horn"><span>📣</span><strong>Korna</strong></button>
+            <button class="sound-button" type="button" data-effect="drum"><span>🥁</span><strong>Davul geçişi</strong></button>
+            <button class="sound-button" type="button" data-effect="bell"><span>🔔</span><strong>Zil</strong></button>
+          </div>
+          <div class="mixer-channel effect-volume">
+            <label for="effectsVolume">🎭 Efekt seviyesi <strong id="effectsVolumeValue">85%</strong></label>
+            <input id="effectsVolume" type="range" min="0" max="100" value="85">
+            <button id="effectsMute" class="mini-toggle" type="button">Efektleri sessize al</button>
+          </div>
+          <p id="effectStatus" class="muted small" aria-live="polite">Efektler hazır. Bir düğmeye basarak deneyebilirsin.</p>
+          <audio id="fxLaugh" src="/effects/kahkaha.wav" preload="auto"></audio>
+          <audio id="fxApplause" src="/effects/alkis.wav" preload="auto"></audio>
+          <audio id="fxHorn" src="/effects/korna.wav" preload="auto"></audio>
+          <audio id="fxDrum" src="/effects/davul_gecisi.wav" preload="auto"></audio>
+          <audio id="fxBell" src="/effects/zil.wav" preload="auto"></audio>
+        </section>
+        <div class="note warning">Müzik, mikrofon ve efektler tek miks hâline getirilip LiveKit Cloud SFU üzerinden dinleyicilere aktarılır. Bu pakette LiveKit API bilgileri sunucu tarafında tutulur; gizli anahtar tarayıcıya gönderilmez. WhatsApp grubuna dağıtım için uygulamanın ayrıca herkese açık HTTPS adresinde barındırılması gerekir.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">GELEN MESAJLAR <span class="badge" id="messageCount">0</span></div>
+        <div id="consoleMessages" class="messages"><p class="muted">Henüz mesaj yok.</p></div>
+        <hr>
+        <section id="guestSessionPanel" class="guest-session-panel">
+          <h3>🤝 Konuk oturumu</h3>
+          <p class="muted small">Geçici bir davet bağlantısı oluştur. Bağlantı 60 dakika geçerlidir; aynı anda en fazla 2 konuk katılabilir.</p>
+          <button id="createGuestSession" class="btn secondary full" type="button">＋ Konuk oturumu aç</button>
+          <div id="guestSessionDetails" class="guest-session-details hidden">
+            <label class="field-label" for="guestInviteLink">Konuk davet bağlantısı</label>
+            <div class="copy-row">
+              <input id="guestInviteLink" readonly aria-label="Konuk davet bağlantısı">
+              <button id="copyGuestLink" class="btn secondary" type="button">Kopyala</button>
+            </div>
+            <p id="guestExpiry" class="muted small"></p>
+            <div class="guest-roster-head"><strong>Bağlı konuklar</strong><span id="guestRosterCount" class="badge">0 / 2</span></div>
+            <div id="guestRoster" class="guest-roster"><p class="muted small">Henüz konuk katılmadı.</p></div>
+            <button id="endGuestSession" class="btn danger full" type="button">Konuk oturumunu kapat</button>
+          </div>
+          <p id="guestSessionStatus" class="muted small" aria-live="polite">Konuk oturumu kapalı.</p>
+          <p class="note warning">Konuk daveti, uygulamanın barındırıldığı adresten oluşturulur. WhatsApp üzerinden uzaktan katılım için herkese açık HTTPS adresi gerekir.</p>
+        </section>
+      </div>
+    </section>
+    <footer>Motorcu Radyosu • LiveKit Cloud canlı ses v0.5.0</footer>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/livekit.bundle.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

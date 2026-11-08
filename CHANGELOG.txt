@@ -1,0 +1,6 @@
+Motorcu Radyosu 0.5.0
+- Direct peer-to-peer WebRTC audio replaced by LiveKit Cloud SFU room publishing/subscribing.
+- Server-side role-based token endpoint. API Secret stored only in local .env.
+- Secure PowerShell setup helper for API credentials.
+- Existing playlist, mixer, microphone, sound effects, guest session, and Socket.IO chat retained.
+- Public HTTPS hosting and native Android/iOS background audio remain separate next steps.

@@ -1,0 +1,8 @@
+{
+  "name": "Motorcu Radyosu",
+  "short_name": "Motorcu Radyo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111318",
+  "theme_color": "#111318"
+}

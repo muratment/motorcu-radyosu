@@ -1,0 +1,20 @@
+{
+  "name": "motorcu-radyo-mvp",
+  "version": "0.5.0",
+  "description": "Motorcu Radyosu LiveKit Cloud canlı ses, mikser, efektler ve mesajlaşma denemesi",
+  "main": "server.js",
+  "scripts": {
+    "build:livekit": "esbuild public/livekit-entry.js --bundle --format=iife --outfile=public/livekit.bundle.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "livekit-server-sdk": "^2.0.0",
+    "livekit-client": "^2.0.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
