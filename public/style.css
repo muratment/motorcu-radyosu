@@ -40,3 +40,12 @@
 #listenNowBtn{margin-top:0}
 #audioStatus,#streamStatus{line-height:1.55}
 .error-text{color:#ff9999!important}
+
+/* Profesyonel mikrofon paneli */
+.mic-pro-controls{display:grid;gap:12px;margin-top:14px;padding:13px;background:#171a21;border:1px solid var(--line);border-radius:10px}
+.mic-pro-controls select{width:100%;padding:11px;background:#252a34;color:#fff;border:1px solid var(--line);border-radius:8px}
+.field-label{font-size:12px;font-weight:700}
+.mic-eq{grid-template-columns:repeat(3,minmax(0,1fr))}
+.mic-option{display:flex;align-items:center;gap:9px;font-size:12px}
+.mic-option input{accent-color:var(--orange)}
+@media(max-width:560px){.mic-eq{grid-template-columns:1fr}}

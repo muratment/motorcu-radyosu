@@ -20,6 +20,12 @@ let monitorMasterGain = null;
 let musicGainNode = null;
 let effectsGainNode = null;
 let micGainNode = null;
+let micHighpass = null;
+let micBassFilter = null;
+let micMidFilter = null;
+let micTrebleFilter = null;
+let micCompressor = null;
+let micLimiter = null;
 let micAnalyser = null;
 let micInputSource = null;
 let micStream = null;
@@ -160,6 +166,37 @@ async function ensureAudioGraph() {
     musicGainNode = audioContext.createGain();
     effectsGainNode = audioContext.createGain();
     micGainNode = audioContext.createGain();
+    micHighpass = audioContext.createBiquadFilter();
+    micHighpass.type = 'highpass';
+    micHighpass.frequency.value = 80;
+
+    micBassFilter = audioContext.createBiquadFilter();
+    micBassFilter.type = 'lowshelf';
+    micBassFilter.frequency.value = 120;
+
+    micMidFilter = audioContext.createBiquadFilter();
+    micMidFilter.type = 'peaking';
+    micMidFilter.frequency.value = 1200;
+    micMidFilter.Q.value = 0.8;
+
+    micTrebleFilter = audioContext.createBiquadFilter();
+    micTrebleFilter.type = 'highshelf';
+    micTrebleFilter.frequency.value = 8000;
+
+    micCompressor = audioContext.createDynamicsCompressor();
+    micCompressor.threshold.value = -24;
+    micCompressor.knee.value = 20;
+    micCompressor.ratio.value = 3;
+    micCompressor.attack.value = 0.005;
+    micCompressor.release.value = 0.15;
+
+    micLimiter = audioContext.createDynamicsCompressor();
+    micLimiter.threshold.value = -3;
+    micLimiter.knee.value = 0;
+    micLimiter.ratio.value = 20;
+    micLimiter.attack.value = 0.001;
+    micLimiter.release.value = 0.08;
+
     micAnalyser = audioContext.createAnalyser();
     micAnalyser.fftSize = 256;
 
@@ -169,7 +206,14 @@ async function ensureAudioGraph() {
     musicGainNode.connect(monitorMasterGain);
     effectsGainNode.connect(streamMasterGain);
     effectsGainNode.connect(monitorMasterGain);
-    micGainNode.connect(streamMasterGain); // Do not monitor microphone locally (prevents feedback).
+    // Mikrofon işleme zinciri: EQ -> kompresör -> limiter -> yayın.
+    micHighpass.connect(micBassFilter);
+    micBassFilter.connect(micMidFilter);
+    micMidFilter.connect(micTrebleFilter);
+    micTrebleFilter.connect(micCompressor);
+    micCompressor.connect(micLimiter);
+    micLimiter.connect(micGainNode);
+    micGainNode.connect(streamMasterGain); // Yerel mikrofon monitörü kapalı.
 
     const musicSource = audioContext.createMediaElementSource(player);
     musicSource.connect(musicGainNode);
@@ -550,13 +594,59 @@ document.querySelectorAll('.sound-button').forEach(button => {
 });
 
 // Microphone input: microphone is mixed into the outgoing stream, never locally monitored.
+function applyMicProcessing() {
+  if (!audioContext || !micBassFilter) return;
+
+  micBassFilter.gain.setTargetAtTime(Number($('micBass').value), audioContext.currentTime, 0.02);
+  micMidFilter.gain.setTargetAtTime(Number($('micMid').value), audioContext.currentTime, 0.02);
+  micTrebleFilter.gain.setTargetAtTime(Number($('micTreble').value), audioContext.currentTime, 0.02);
+
+  const compressorOn = $('micCompressor').checked;
+  micCompressor.threshold.setTargetAtTime(compressorOn ? -24 : 0, audioContext.currentTime, 0.02);
+  micCompressor.ratio.setTargetAtTime(compressorOn ? 3 : 1, audioContext.currentTime, 0.02);
+
+  $('micBassValue').textContent = `${$('micBass').value} dB`;
+  $('micMidValue').textContent = `${$('micMid').value} dB`;
+  $('micTrebleValue').textContent = `${$('micTreble').value} dB`;
+}
+
 function applyMicControl() {
   if (audioContext && micGainNode) {
     const value = micMuted ? 0 : Number($('micVolume').value) / 100;
     micGainNode.gain.setTargetAtTime(value, audioContext.currentTime, 0.015);
   }
   $('micVolumeValue').textContent = `${$('micVolume').value}%`;
+  applyMicProcessing();
 }
+
+['micBass', 'micMid', 'micTreble', 'micCompressor'].forEach(id => {
+  $(id).addEventListener('input', applyMicProcessing);
+  $(id).addEventListener('change', applyMicProcessing);
+});
+
+async function loadMicrophoneDevices() {
+  if (!navigator.mediaDevices?.enumerateDevices) return;
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const select = $('micInputDevice');
+  const selected = select.value;
+  select.innerHTML = '<option value="">Varsayılan mikrofon</option>';
+  devices.filter(device => device.kind === 'audioinput').forEach((device, index) => {
+    const option = document.createElement('option');
+    option.value = device.deviceId;
+    option.textContent = device.label || `Mikrofon ${index + 1}`;
+    select.appendChild(option);
+  });
+  select.value = selected;
+}
+
+$('micInputDevice').addEventListener('change', async () => {
+  if (!micStream) return;
+  micStream.getTracks().forEach(track => track.stop());
+  micStream = null;
+  if (micInputSource) micInputSource.disconnect();
+  micInputSource = null;
+  $('micEnable').click();
+});
 $('micEnable').addEventListener('click', async () => {
   try {
     if (micStream) {
@@ -572,12 +662,19 @@ $('micEnable').addEventListener('click', async () => {
       return;
     }
     await ensureAudioGraph();
-    micStream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
-    });
+    const selectedMic = $('micInputDevice').value;
+    const audioConstraints = {
+      echoCancellation: true,
+      noiseSuppression: $('micNoiseSuppression').checked,
+      autoGainControl: false
+    };
+    if (selectedMic) audioConstraints.deviceId = { exact: selectedMic };
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+    await loadMicrophoneDevices();
     micInputSource = audioContext.createMediaStreamSource(micStream);
     micInputSource.connect(micAnalyser);
-    micInputSource.connect(micGainNode);
+    micInputSource.connect(micHighpass);
+    applyMicProcessing();
     applyMicControl();
     const data = new Uint8Array(micAnalyser.frequencyBinCount);
     const draw = () => {

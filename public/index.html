@@ -124,6 +124,28 @@
             <input id="micVolume" type="range" min="0" max="100" value="80">
             <button id="micMute" class="mini-toggle" type="button">Mikrofonu sessize al</button>
           </div>
+          <div class="mic-pro-controls">
+            <label class="field-label" for="micInputDevice">🎙️ Mikrofon cihazı</label>
+            <select id="micInputDevice">
+              <option value="">Varsayılan mikrofon</option>
+            </select>
+            <div class="mixer mic-eq">
+              <div class="mixer-channel">
+                <label for="micBass">Bas <strong id="micBassValue">0 dB</strong></label>
+                <input id="micBass" type="range" min="-12" max="12" value="0">
+              </div>
+              <div class="mixer-channel">
+                <label for="micMid">Orta <strong id="micMidValue">0 dB</strong></label>
+                <input id="micMid" type="range" min="-12" max="12" value="0">
+              </div>
+              <div class="mixer-channel">
+                <label for="micTreble">Tiz <strong id="micTrebleValue">0 dB</strong></label>
+                <input id="micTreble" type="range" min="-12" max="12" value="0">
+              </div>
+            </div>
+            <label class="mic-option"><input id="micCompressor" type="checkbox" checked> Ses kompresörü</label>
+            <label class="mic-option"><input id="micNoiseSuppression" type="checkbox" checked> Mikrofon gürültü azaltma</label>
+          </div>
           <div class="mic-row"><button id="micEnable" class="btn secondary">🎙️ Mikrofon izni ver</button><span id="micStatus" class="muted small">Mikrofon kapalı</span></div>
           <div class="meter"><div id="micMeter"></div></div>
           <p class="muted small">Mikrofon sesi müzik ve efektlerle karıştırılarak LiveKit Cloud canlı yayınına eklenir. Mikrofonu açmak için tarayıcı izni gerekir.</p>
